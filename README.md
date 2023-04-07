@@ -13,3 +13,7 @@ This file is mainly the code of the simulation part, which mainly includes three
 ## [model_real_data_analysis.R](https://github.com/tsnm1/LRBmat/blob/main/model_real_data_analysis.R "model_real_data_analysis.R")
 
 This part is the analysis of real world data. The main content is similar to simulation, but the difference is that the real data model includes the test of heterogeneity and the analysis of association rules.
+
+## [add_experiments.R](https://github.com/tsnm1/LRBmat/blob/main/add_experiments "add_experiments")
+
+The code is divided into two main parts. The first part demonstrates the classification of patients at different CRC stages and the problem of classifying adenoma (precancerous stage) and normal stages. The second part demonstrates two different approaches to the redundancy of association rules.
