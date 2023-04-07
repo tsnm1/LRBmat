@@ -6,8 +6,6 @@
 ############# Functions ########### 
 # The following functions are detailed in model_functions.R
 divide_train_test <- function(s_matrix_HC,s_matrix_CRC,r_len,k_i) {
-  #s_matrix_HC ,s_matrix_CRC
-  #r_len<1表示随机选择测试集，反之代表交叉验证，k_i表示交叉验证次数
   m = dim(s_matrix_HC)[2]  # 200
   n0 = dim(s_matrix_HC)[1] # 524
   n1 = dim(s_matrix_CRC)[1] # 503
@@ -25,8 +23,6 @@ divide_train_test <- function(s_matrix_HC,s_matrix_CRC,r_len,k_i) {
   }
   test_data = s_matrix1[c(c1,c2),];   p_test = lable_s[c(c1,c2)]
   train_data = s_matrix1[-c(c1,c2),]; p_train = lable_s[-c(c1,c2)]
-  
-  # 乱序一下
   n_test_data = sample(nrow(test_data))
   n_train_data = sample(nrow(train_data))
   test_data <- test_data[n_test_data,]; p_test =p_test[n_test_data]
@@ -36,7 +32,7 @@ divide_train_test <- function(s_matrix_HC,s_matrix_CRC,r_len,k_i) {
   rm(list=c('m','n0','n1','s_matrix11','lable_s','s_matrix1','c1','c2','test_data','train_data'))
   gc()
   return(output_divide)
-} # HC在前
+} 
 
 CV_variable_selection <- function(s_matrix_HC,s_matrix_CRC,r_len){
   n_sample_HC = sample(nrow(s_matrix_HC))
@@ -73,11 +69,11 @@ CV_variable_selection <- function(s_matrix_HC,s_matrix_CRC,r_len){
 }
 
 contingency_table_test <- function(train_data,test_data,label_train,pa,n){
-  s_lable_01 = data.frame(train_data)  # ת??Ϊ??��Ϊ??
+  s_lable_01 = data.frame(train_data)  
   # s_lable_01 = ifelse(s_lable_01>0,1,0)
   # s_lable_01 = ifelse(s_lable_01>=0,1,0)
   s_lable_01[s_lable_01>0] = 1
-  s_lable_01[s_lable_01!=1] = 0   # ??Ϊ?????????еĸ???
+  s_lable_01[s_lable_01!=1] = 0   
   size = dim(s_lable_01)
   a<-seq(0,0,length=size[2])
   for(i in 1:size[2]){
@@ -93,19 +89,18 @@ contingency_table_test <- function(train_data,test_data,label_train,pa,n){
       a[i] = 1
     }
   }
-  s_p_n = order(a)[1:n]      # ????????
+  s_p_n = order(a)[1:n]     
   s_len = length(a[a<=pa])   # Number of selected microorganisms
   #Select samples that have passed the microbiological test;
-  s_train=apply(as.data.frame(t(train_data)),2,as.numeric)  #??��Ϊ?? 100*800
+  s_train=apply(as.data.frame(t(train_data)),2,as.numeric) 
   s_test=apply(as.data.frame(t(test_data)),2,as.numeric)
-  train_data = as.data.frame(t(subset(s_train,a<=pa)))    # ???н???ɸѡ(???л?????��չ)
-  test_data = as.data.frame(t(subset(s_test,a<=pa))) # ??��˳??Ӧ??û?䣿
-  train_data_n = as.data.frame(t(s_train[sort(s_p_n),]))  # ??��˳?????ò??䣿
+  train_data = as.data.frame(t(subset(s_train,a<=pa)))    
+  test_data = as.data.frame(t(subset(s_test,a<=pa))) 
+  train_data_n = as.data.frame(t(s_train[sort(s_p_n),]))  
   test_data_n = as.data.frame(t(s_test[sort(s_p_n),]))
   # save(s_matrix,file="s_matrix.Rdata")
-  # load("s_matrix.Rdata")  # ????ɸѡ????????200*1027
-  s_p_order = c(1:size[2])[a<=pa]   # ????ɸѡ??????΢??????????
-  # ??????????��Ϊ??
+  # load("s_matrix.Rdata")  
+  s_p_order = c(1:size[2])[a<=pa]   
   output_chi = list(train_data,test_data,s_p_order,s_len,s_p_n,a,train_data_n,test_data_n)
   rm(list=c('size','train_data','test_data','a','train_data_n','test_data_n'))
   gc()
@@ -113,7 +108,7 @@ contingency_table_test <- function(train_data,test_data,label_train,pa,n){
 }
 
 binary_matrix_conversion32 <- function(train_data,test_data,label_train,label_test,n_cor){
-  # train_data 变量为列
+  # train_data 
   train_data1 <- train_data[,-c(1,2,3)]
   test_data1 <- test_data[,-c(1,2,3)]
   m = dim(test_data1)[2]   # 200
@@ -139,9 +134,9 @@ binary_matrix_conversion32 <- function(train_data,test_data,label_train,label_te
     train_data11 = as.matrix(train_data11)
     pfit = cv.glmnet(train_data11,label_train, family = "binomial",type.measure ="class",nfolds = 5)  # 0.154
     #pfit$lambda.min
-    # coefficients<-coef(pfit, s = "lambda.min")  #如下是变量的系数
-    # Active.Index<-which(coefficients!=0) #系数不为0的特征索引
-    # Active.coefficients<-coefficients[Active.Index] #系数不为0的特征系数值
+    # coefficients<-coef(pfit, s = "lambda.min")
+    # Active.Index<-which(coefficients!=0) 
+    # Active.coefficients<-coefficients[Active.Index] 
     pred1 = predict(pfit,train_data11,s = 'lambda.min',type = "class") 
     # plot(pred) # type = "response"
     pred = predict(pfit,test_data11,s = 'lambda.min',type = "class") 
@@ -155,301 +150,6 @@ binary_matrix_conversion32 <- function(train_data,test_data,label_train,label_te
   rm(list=c('train_data','test_data','p_pre','t_pre'))
   gc()
   return(output_bi)
-}
-
-if(TRUE){
-  
-  classification_svm <- function(train_data,test_data,label_train,label_test,gamma1,cost1){
-    # train_data = train_data_w
-    # test_data = train_data_w
-    # label_train = label_train
-    # label_test = label_train
-    # gamma1 = 0.0001
-    # cost1 = 1
-    #rownames(train_data) = paste('', c(1:dim(train_data)[1]),sep = "", collapse = NULL)
-    #rownames(test_data) = paste('', c(1:dim(test_data)[1]),sep = "", collapse = NULL)
-    d_train <- data.frame(train_data,y=as.factor(label_train))
-    d_test <- data.frame(test_data,y=as.factor(label_test))
-    #tuned <- tune.svm(y~.,data=d_train,gamma=10^(-4:1),cost=10^(-2:2))
-    # $best.parameters
-    # gamma cost
-    # 22   0.1   10
-    # gamma越小第一个值可能越大？
-    train_svm = svm(y~.,data=d_train,kernel='radial',gamma=gamma1,cost=cost1,scale=F)
-    #pred_train=predict(train_svm,d_train)
-    #table(pred=pred_train,truth=label_train)
-    pred=predict(train_svm,d_test,decision.values = TRUE)    # testing set
-    # pred=predict(train_svm,d_train,decision.values = TRUE)  # training set
-    #lebal_test = lebal_train
-    if(length(pred)!=length(label_test)){
-      print('length(pred)!=length(label_test)')
-      label_test = label_test[c(1:length(label_test)) %in% names(pred)]
-      label_test = label_test[!is.na(pred)]
-      pred = pred[!is.na(pred)]
-    }
-    test_table = table(pred=pred,truth=label_test)
-    pred=predict(train_svm,d_test,decision.values = TRUE)    # testing set
-    auc = classification_auc(-attr(pred, "decision.values"),label_test)
-    auc = ifelse(auc<0.5,1-auc,auc)
-    #pred CRC HC
-    TP = test_table[1]
-    FP = test_table[2]
-    FN = test_table[3]
-    TN = test_table[4]
-    TPR =  TP/(TP+FN)
-    FPR =  FP/(FP+TN)
-    ACC =  (TP+TN)/(TP+FP+FN+TN)
-    output_svm = list(TPR,FPR,ACC,auc)
-    rm(list=c('d_train','d_test','train_svm','pred','test_table'))
-    gc()
-    return(output_svm)
-  }
-  
-  classification_svm1 <- function(train_data,test_data,label_train,label_test,sigma1,C1){
-    #colnames(train_data) = paste('', c(1:dim(train_data)[2]),sep = "", collapse = NULL)
-    #colnames(test_data) = paste('', c(1:dim(test_data)[2]),sep = "", collapse = NULL)
-    d_train <- data.frame(train_data,y=as.factor(label_train))
-    d_test <- data.frame(test_data,y=as.factor(label_test))
-    train_svm <- ksvm(y~., data = d_train,type = "C-svc", kernel = "rbfdot",
-                      kpar=  list(sigma=sigma1), # "automatic",#  # #
-                      C=C1,cross=3,prob.model = TRUE) #训练  ,cross=5
-    # train_svm <- ksvm(y~., data = d_train) #训练  ,cross=5
-    # train_svm <- ksvm(y~., data = d_train, kernel = "rbfdot",
-    #                   kpar=  list(sigma=sigma1), # "automatic",#  # #
-    #                   C=C1,cross=3,prob.model = TRUE) #训练  ,cross=5
-    #pred_train=predict(train_svm,d_train)
-    #table(pred=pred_train,truth=label_train)
-    pred = predict(train_svm,d_train,type = "response")#    # testing set
-    #pred=predict(train_svm,d_train,decision.values = TRUE)  # training set
-    #lebal_test = lebal_train
-    if(length(pred)!=length(label_test)){
-      print('length(pred)!=length(label_test)')
-      #lebal_test = lebal_test[c(1:length(label_test)) %in% names(pred)]
-      label_test = label_test[!is.na(pred)]
-      pred = pred[!is.na(pred)]
-    }
-    test_table = table(pred=pred,truth=label_test)
-    pred=predict(train_svm,d_test,type = "probabilities")    # testing set
-    auc = classification_auc(pred[,1],label_test)
-    #pred=predict(train_svm,d_test,type = "decision")
-    #auc = classification_auc(pred,lebal_test)
-    #pred CRC HC
-    TP = test_table[1]
-    FP = test_table[2]
-    FN = test_table[3]
-    TN = test_table[4]
-    TPR =  TP/(TP+FN)
-    FPR =  FP/(FP+TN)
-    ACC =  (TP+TN)/(TP+FP+FN+TN)
-    output_svm = list(TPR,FPR,ACC,auc)
-    rm(list=c('d_train','d_test','train_svm','pred','test_table'))
-    gc()
-    return(output_svm)
-  } 
-  
-  classification_logistic1 <- function(train_data,test_data,label_train,label_test){
-    #label_train = ifelse(label_train=='HC',0,1)
-    #label_test = ifelse(label_test=='HC',0,1)
-    d_train <- data.frame(train_data,y=as.factor(label_train))
-    d_test <- data.frame(test_data,y=as.factor(label_test))
-    glm.fit = glm(y~.,family = binomial,d_train)   # LR
-    #summary(glm.fit)
-    glm.pre1 = predict(glm.fit,d_train,type="response") #“link”, “response”, “terms”
-    glm.pre1=1/(1+exp(glm.pre1)) 
-    #plot(sort(glm.pre1))
-    #plot(glm.pre1)
-    #table(pred=pred_train,truth=label_train)
-    ii = 0.01
-    errorq = seq(0,0,length=1/ii)
-    for(q in seq(ii,1,ii)){
-      qq = seq(0,0,length=length(glm.pre1))
-      qq[glm.pre1 < q] = 0
-      qq[glm.pre1!=0] = 1
-      errorq[q/ii] = length(label_train[qq==label_train])/length(glm.pre1)
-    }
-    p0 = median(seq(ii,1,ii)[errorq==max(errorq)])
-    
-    pred = predict(glm.fit,d_test,type = 'response')
-    pred=1/(1+exp(pred)) 
-    auc = classification_auc(pred,label_test)
-    
-    #plot(pred)
-    p0 = 1/(1+exp(p0)) 
-    pred = ifelse(pred < p0,0,1)
-    
-    test_table = table(pred=pred,truth=label_test)
-    # auc = classification_auc(pred,label_test)
-    TP = test_table[1]
-    FP = test_table[2]
-    FN = test_table[3]
-    TN = test_table[4]
-    TPR =  TP/(TP+FN)
-    FPR =  FP/(FP+TN)
-    ACC =  (TP+TN)/(TP+FP+FN+TN)
-    output_logistic = list(TPR,FPR,ACC,auc)
-    rm(list=c('d_train','d_test','glm.fit','pred','test_table'))
-    gc()
-    return(output_logistic)
-  }
-  
-  classification_logistic <- function(train_data,test_data,label_train,label_test){
-    train_data = as.matrix(train_data)
-    test_data = as.matrix(test_data)
-    cvfit = cv.glmnet(train_data,label_train,family = "binomial",type.measure ="class")     # "class" "auc"
-    glm.pre1 = predict(cvfit, train_data, s = "lambda.min", type = "class")
-    pred = predict(cvfit,test_data, s = "lambda.min", type = "response")
-    auc = classification_auc(1-pred,label_test)
-    auc = ifelse(auc<0.5,1-auc,auc)
-    pred = predict(cvfit,test_data, s = "lambda.min", type = "class")
-    test_table = table(pred=pred,truth=label_test)
-    TP = test_table[1]
-    FP = test_table[2]
-    FN = test_table[3]
-    TN = test_table[4]
-    TPR =  TP/(TP+FN)
-    FPR =  FP/(FP+TN)
-    ACC =  (TP+TN)/(TP+FP+FN+TN)
-    output_logistic = list(TPR,FPR,ACC,auc)
-    rm(list=c('cvfit','glm.pre1','pred','test_table'))
-    gc()
-    return(output_logistic)
-  }
-  
-  classification_logistic2 <- function(train_data,test_data,label_train,label_test,interactions){
-    train_data <- model_interactions(train_data,0.1,interactions)
-    test_data <- model_interactions(test_data,0.1,interactions)
-    train_data = as.matrix(train_data)
-    test_data = as.matrix(test_data)
-    
-    cvfit = cv.glmnet(train_data,label_train,family = "binomial",type.measure ="class")     # "class" "auc"
-    glm.pre1 = predict(cvfit, train_data, s = "lambda.min", type = "class")
-    pred = predict(cvfit,test_data, s = "lambda.min", type = "response")
-    auc = classification_auc(1-pred,label_test)
-    auc = ifelse(auc<0.5,1-auc,auc)
-    pred = predict(cvfit,test_data, s = "lambda.min", type = "class")
-    test_table = table(pred=pred,truth=label_test)
-    TP = test_table[1]
-    FP = test_table[2]
-    FN = test_table[3]
-    TN = test_table[4]
-    TPR =  TP/(TP+FN)
-    FPR =  FP/(FP+TN)
-    ACC =  (TP+TN)/(TP+FP+FN+TN)
-    output_logistic = list(TPR,FPR,ACC,auc)
-    rm(list=c('cvfit','glm.pre1','pred','test_table'))
-    gc()
-    return(output_logistic)
-  }
-  
-  classification_tree <- function(train_data,test_data,label_train,label_test){
-    d_train <- data.frame(train_data,y=as.factor(label_train))
-    d_test <- data.frame(test_data,y=as.factor(label_test))
-    train_tree = tree(y~.,data=d_train)
-    pred_train=predict(train_tree,d_train,type = 'class')
-    table(pred=pred_train,truth=label_train)
-    pred = predict(train_tree,d_test,type = 'class')
-    test_table = table(pred=pred,truth=label_test)
-    pred_auc =predict(train_tree,d_test,type = 'vector')
-    auc = classification_auc(pred_auc[,1],label_test)
-    TP = test_table[1]
-    FP = test_table[2]
-    FN = test_table[3]
-    TN = test_table[4]
-    TPR =  TP/(TP+FN)
-    FPR =  FP/(FP+TN)
-    ACC =  (TP+TN)/(TP+FP+FN+TN)
-    output_tree = list(TPR,FPR,ACC,auc)
-    rm(list=c('d_train','d_test','train_tree','pred','test_table'))
-    gc()
-    return(output_tree)
-  }
-  
-  classification_rf <- function(train_data,test_data,label_train,label_test,mtry1){
-    rownames(train_data) = paste('', c(1:dim(train_data)[1]),sep = "", collapse = NULL)
-    rownames(test_data) = paste('', c(1:dim(test_data)[1]),sep = "", collapse = NULL)
-    d_train <- data.frame(train_data,y=as.factor(label_train))
-    d_test <- data.frame(test_data,y=as.factor(label_test))
-    # mtry=(length(d_test))^(1/2),
-    train_rf = randomForest(y~.,data=d_train,mtry=mtry1,na.action = na.omit)
-    #pred_train = predict(train_rf,d_train,type = 'class')
-    #table(pred=pred_train,truth=lebal_train)
-    #d_test = d_train               # training set
-    #lebal_test = lebal_train        # training set
-    pred=predict(train_rf,d_test,type = 'class')    # testing set
-    pred=na.omit(pred)
-    if(length(pred)!=length(label_test)){
-      print('length(pred)!=length(lebal_test)')
-      label_test=label_test[c(1:length(label_test)) %in% names(pred)]  # quchu NA
-    }
-    test_table = table(pred=pred,truth=label_test)
-    pred_auc = predict(train_rf,d_test,type="prob",)
-    pred_auc = na.omit(pred_auc)
-    #lebal_test2=lebal_test[c(1:length(label_test)) %in% row.names(pred_auc)]  # 其实去一次就行
-    auc = classification_auc(pred_auc[,1],label_test)
-    auc = ifelse(auc<0.5,1-auc,auc)
-    TP = test_table[1]
-    FP = test_table[2]
-    FN = test_table[3]
-    TN = test_table[4]
-    TPR =  TP/(TP+FN)
-    FPR =  FP/(FP+TN)
-    ACC =  (TP+TN)/(TP+FP+FN+TN)
-    output_rf = list(TPR,FPR,ACC,auc)
-    rm(list=c('d_train','d_test','train_rf','pred','test_table'))
-    gc()
-    return(output_rf)
-  }
-  
-  classification_xgboost <- function(train_data,test_data,label_train,label_test,max_depth1,eta1){
-    # label_test[label_test=='HC']=0
-    # label_test[label_test=='CRC']=1
-    # label_train[label_train=='HC']=0
-    # label_train[label_train=='CRC']=1
-    train_data = as.matrix(train_data)
-    test_data = as.matrix(test_data)
-    dtrain <- xgb.DMatrix(data=train_data,label=label_train) 
-    dtest <- xgb.DMatrix(data=test_data,label=label_test)
-    # max_depth=2,eta=0.1
-    train_xgboost <- xgboost(data=dtrain,max_depth=max_depth1,eta=eta1,
-                             objective='binary:logistic',nround=300,verbose=0)
-    #在测试集上预测
-    pred_xgb = predict(train_xgboost,dtest)
-    auc = classification_auc(pred_xgb,label_test)
-    pred_xgb1 = round(pred_xgb)
-    test_table = table(pred_xgb1,label_test)
-    # pred_xgb1  0  1
-    TN = test_table[1]
-    FN = test_table[2]
-    FP = test_table[3]
-    TP = test_table[4]
-    TPR =  TP/(TP+FN)
-    FPR =  FP/(FP+TN)
-    ACC =  (TP+TN)/(TP+FP+FN+TN)
-    output_xgboost = list(TPR,FPR,ACC,auc)
-    rm(list=c('dtrain','dtest','train_xgboost','pred_xgb','test_table'))
-    gc()
-    return(output_xgboost)
-  }
-  
-} 
-
-classification_auc <- function(pred_test,label_test){
-  # library(ROCR)  # 计算AUC值
-  pred_test = as.matrix(pred_test) # 预测结果
-  # pred_test[pred_test=='CRC']=1
-  # pred_test[pred_test=='HC']=0
-  pred_test = as.numeric(pred_test)
-  label_test = as.matrix(label_test) # 真实标签
-  # label_test[label_test=='CRC']=1
-  # label_test[label_test=='HC']=0
-  label_test = as.numeric(label_test)
-  
-  pred = prediction(pred_test,label_test)
-  perf = performance(pred,"tpr","fpr")
-  #plot(perf,col="blue",lty=3,lwd=3,cex.lab=1.5,cex.axis=2,cex.main=1.5,main="ROC plot")
-  auc = performance(pred,"auc")
-  auc = unlist(slot(auc, "y.values"))
-  return(auc)
 }
 
 vartest_CRC2 <- function(data,label,n_cv){
@@ -500,17 +200,9 @@ vartest_CRC2 <- function(data,label,n_cv){
   return(output_vartest)
 }
 
-gyh<-function(x){
-  if(length(table(x))!=1){  # sum(x)!=0，因为只有这种情况
-    # x = (x-min(x))/(max(x)-min(x))  # 0 1
-    mean_x = (max(x)+min(x))/2
-    x = (x-mean_x)*3/(max(x)-min(x))   # -1 1 *2
-  }
-  return(x)
-}
 
 gyh1<-function(x){
-  if(length(table(x))!=1){  # sum(x)!=0，因为只有这种情况
+  if(length(table(x))!=1){  # sum(x)!=0
     x = (x-min(x))/(max(x)-min(x))  # 0 1
     # mean_x = (max(x)+min(x))/2
     # x = (x-mean_x)*3/(max(x)-min(x))   # -1 1 *2
@@ -518,104 +210,7 @@ gyh1<-function(x){
   return(x)
 }
 
-arules_data01_label <- function(test_data_01,label_test,vs_select,support,confidence){
-  
-  # Description: Generation and filtering of association rules.
-  # Input:
-  #   test_data_01: The binary matrix corresponding to the original data.
-  #   label_test: Corresponding labels.
-  #   vs_select: Results of covariate selection.
-  #   support, confidence: Initial screening parameters of association rules.
-  # Output:
-  #   rules1_js: Association rules related to CRC or 1.
-  #   rules2_js: Association rules related to HC or 0.
-  
-  # library(ROCR)  # Calculating AUC value
-  # test_data_01_po = test_data_01   # positive
-  # test_data_01_ne = test_data_01  # negative
-  if(length(label_test[label_test=='CRC'])>0){
-    label_test1 = ifelse(label_test=='CRC',1,0)  # CRC
-    label_test2 = ifelse(label_test=='HC',1,0)   # HC
-  }else{
-    label_test1 = ifelse(label_test==1,1,0)  # CRC
-    label_test2 = ifelse(label_test==0,1,0)   # HC
-  }
-  # label_test1 = ifelse(label_test=='CRC',1,0)   # CRC
-  # label_test2 = ifelse(label_test=='HC',1,0)    # HC
-  n_select = vs_select                            # output_cvvs[[3]]
-  test_data_01_po = ifelse(test_data_01==1,1,0)   # positive
-  colnames(test_data_01_po) = paste('po',n_select,sep = "", collapse = NULL)
-  test_data_01_ne = ifelse(test_data_01==-1,1,0)  # negative
-  colnames(test_data_01_ne) = paste('ne',n_select,sep = "", collapse = NULL)
-  
-  ######## Screening CRC-related association rules.
-  data_CRC_rules = cbind(test_data_01_po,test_data_01_ne,label_test1)
-  rules1 <- apriori(data_CRC_rules,parameter=list(supp=support,conf=confidence,target = "rules" ),
-                    control = list ( verbose = FALSE ),
-                    appearance = list(rhs ="label_test1"))  #list(items ="label_test1") 
-  rules1.sorted <- sort(rules1, by = "confidence")  # by = "lift"
-  quality(rules1.sorted)$improvement <- interestMeasure(rules1.sorted, measure = "improvement")
-  # inspect(rules1.sorted)
-  # is.redundant(rules1.sorted)
-  ## non-redundant rules
-  rules1.pruned <- rules1.sorted[!is.redundant(rules1.sorted)]
-  # inspect(subset(rules1.pruned, items %in% 'label_test1' ))   
-  
-  rules1.pruned_label = inspect(sort(rules1.pruned,by="lift"))
-  rules1.pruned_label$len_lhs  = sapply(rules1.pruned_label$lhs,n_var)
-  rules1.pruned_label$len_ne  = sapply(rules1.pruned_label$lhs,n_ne)   
-  #rules1_results = rules1.pruned_label[order(rules1.pruned_label$len_lhs,decreasing=T),]
-  rules1_results = rules1.pruned_label[order(rules1.pruned_label$len_ne,decreasing=T),]
-  # rules1_results[rules1_results$rhs=="{label_test1}",]
-  # rules1_js = rules1_results[rules1_results$rhs=="{label_test1}",]   
-  rules1_js = rules1_results
-  
-  ######## Screening HC-related association rules.
-  data_HC_rules = cbind(test_data_01_po,test_data_01_ne,label_test2)
-  rules2 <- apriori(data_HC_rules,parameter=list(supp=support,conf=confidence,target = "rules" ),
-                    control = list(verbose = FALSE),
-                    appearance = list(rhs ="label_test2"))
-  rules2.sorted <- sort(rules2,by = "confidence")  # by = "lift" ,by = "confidence"
-  quality(rules2.sorted)$improvement <- interestMeasure(rules2.sorted, measure = "improvement")
-  rules2.pruned <- rules2.sorted[!is.redundant(rules2.sorted)]
-  # rules2.pruned@rhs@itemInfo
-  # items
-  # rules2.pruned_label = inspect(sort(subset(rules2.pruned, items %in% 'label_test2' ),by="lift"))
-  rules2.pruned_label = inspect(sort(rules2.pruned,by="lift"))
-  rules2.pruned_label$len_lhs  = sapply(rules2.pruned_label$lhs,n_var)
-  rules2.pruned_label$len_ne  = sapply(rules2.pruned_label$lhs,n_ne)
-  #rules2_results = rules2.pruned_label[order(rules2.pruned_label$len_lhs,decreasing=T),]
-  rules2_results = rules2.pruned_label[order(rules2.pruned_label$len_ne,decreasing=T),]
-  # rules2_results[rules2_results$rhs=="{label_test2}",]
-  # rules2_js = rules2_results[rules2_results$rhs=="{label_test2}",]  
-  rules2_js = rules2_results
-  output_rules = list(rules1_js,rules2_js)
-  rm(list=c('rules1','rules2','rules1.pruned_label','rules2.pruned_label'))
-  gc()
-  return(output_rules)
-}
 
-n_var <- function(a){ 
-  # Description: Filter the number of covariates to the left of the association rule.
-  # Input:
-  #   a: The expression to the left of the association rule.
-  # Output:
-  #   n_var: the number of covariates to the left of the association rule.
-  a = strsplit(a,',')
-  n_var = length(a[[1]])
-  return(n_var)
-}
-
-n_ne <-function(a){
-  # Description: To screen for covariates with negative effects.
-  # Input:
-  #   a: The expression to the left of the association rule.
-  # Output:
-  #   n_var: the number of covariates with negative effects.
-  a = strsplit(a,'ne')
-  n_ne = length(a[[1]])-1
-  return(n_ne)
-}
 
 library(gbm)
 library('e1071')  #SVM
@@ -627,7 +222,7 @@ library(xgboost)
 library(ROCR)     
 library(EnvStats) 
 library(mvtnorm)   
-# library(GenSA)    # 模拟退火
+# library(GenSA)    # 
 library(glmnet)
 library(mniw)   
 library(arules)
@@ -636,7 +231,6 @@ library(arulesViz)
 
 # The adenoma (precancerous stage) and normal stage of CRC were studied
 if(FALSE){
-  # setwd("D:/OneDrive - tshaha/研究生工作/肠道微生物分类/Microbial_dataa")
   s = read.csv("C:/Users/duorou/Desktop/Microbial_data/s_label.csv")
   g = read.table("C:/Users/duorou/Desktop/Microbial_data/group_1224_112.txt",header=T,na.strings = c("NA"))
   bmi <- read.csv("C:/Users/duorou/Desktop/Microbial_data/BMI1.csv")
@@ -645,7 +239,7 @@ if(FALSE){
   s_lable_ID <- merge(g,s,by="ID") 
   s_lable_ID$Gender <- ifelse(s_lable_ID$Gender == "M",0,1)
   s_lable_ID <- subset(s_lable_ID,s_lable_ID$BMI > 0 )
-  # table(s_lable_ID$CRCorHC,s_lable_ID$COUNTRY) 数据不平衡
+  # table(s_lable_ID$CRCorHC,s_lable_ID$COUNTRY) 
   # table(s_lable_ID$CRCorHC,s_lable_ID$sex)
   # table(s_lable_ID$Country,s_lable_ID$CRCorHC)
   # table(s_lable_ID$CRCorHC)
@@ -678,7 +272,6 @@ if(FALSE){
 
 # Article theme experiment. And dealing with the classification of different stages of CRC.
 if(FALSE){
-  # setwd("D:/OneDrive - tshaha/研究生工作/肠道微生物分类/Microbial_dataa")
   s = read.csv("C:/Users/duorou/Desktop/Microbial_data/s_label.csv")
   g = read.table("C:/Users/duorou/Desktop/Microbial_data/group_1224_112.txt",header=T,na.strings = c("NA"))
   bmi <- read.csv("C:/Users/duorou/Desktop/Microbial_data/BMI2.csv")
@@ -726,7 +319,6 @@ if(FALSE){
 # The solution one to the redundancy problem of association rules;
 # The BMI2 data were manipulated, but at the genus level, the columns were grouped and summed
 if(TRUE){
-  # setwd("D:/OneDrive - tshaha/研究生工作/肠道微生物分类/Microbial_dataa")
   s = read.csv("C:/Users/duorou/Desktop/Microbial_data/s_label.csv")
   g = read.table("C:/Users/duorou/Desktop/Microbial_data/group_1224_112.txt",header=T,na.strings = c("NA"))
   bmi <- read.csv("C:/Users/duorou/Desktop/Microbial_data/BMI2.csv")
@@ -818,7 +410,6 @@ if(TRUE){
   # group_gm = group1[cvvs,]
   # write.csv(group_gm3,file = "group_gm3.csv",row.names = F)
   
-  # 看看变量选择后的属种由多少时单独由种类选择出来的？
   group_gm_specials <- read.csv(file = "group_gm3.csv")
   Genus_names[cvvs1_2]
   
@@ -902,7 +493,7 @@ if(FALSE){
   
   order_test1 = group_gm3$number.y[n_byz_order] 
   order_test2 = group_gm3$number.y[p>0.05]
-  length(order_test1[order_test1 %in% order_test2]) # ?ص??ı?��
+  length(order_test1[order_test1 %in% order_test2]) 
   order_test_ch = order_test1[order_test1 %in% order_test2]
   group_gm4 = subset(group_gm3,group_gm3$number.y %in% order_test_ch) 
   write.csv(group_gm4,'group_gm4.csv',row.names = F)
@@ -946,21 +537,21 @@ if(TRUE){
         s_matrix_CRC1 <- s_matrix_CRC1[sample(nrow(s_matrix_CRC1)),]
         for(i in 1:r_len){
           output_divide = divide_train_test(s_matrix_HC1,s_matrix_CRC1,r_len,i)
-          train_data = output_divide[[1]]   # 801*100 ??��Ϊ??,ԭʼ????
+          train_data = output_divide[[1]]   # 801*100 
           test_data = output_divide[[2]]    # 
           label_train = output_divide[[3]]  #    801
           label_test = output_divide[[4]]
           
           output_bi = binary_matrix_conversion32(train_data,test_data,label_train,label_test,n_cor)
           
-          train_data12 = as.data.frame(train_data)  # ?Ա?��??һ??
+          train_data12 = as.data.frame(train_data)  
           train_data <- as.data.frame(apply(train_data12,2,gyh))
           #train_data = as.matrix(train_data1)
           test_data12 = as.data.frame(test_data)
           test_data <- as.data.frame(apply(test_data12,2,gyh))
           
-          train_data_01 = output_bi[[1]]  # 801 10  ?任?????? 823*197
-          test_data_01 = output_bi[[2]]   # 199 10             204*167
+          train_data_01 = output_bi[[1]]  # 801 10  
+          test_data_01 = output_bi[[2]]   # 199 10    
           train_data_w = train_data_01*train_data[,-c(1,2,3)]
           test_data_w = test_data_01*test_data[,-c(1,2,3)]
           train_data_w = cbind(train_data[,c(1,2,3)],train_data_w)
@@ -1058,13 +649,13 @@ if(TRUE){
     # t10=Sys.time()
     # print(t10-t9)
     
-    train_data_11 = as.data.frame(train_data)  # ?Ա?��??һ??
+    train_data_11 = as.data.frame(train_data) 
     train_data <- as.data.frame(apply(train_data_11,2,gyh)) 
     test_data_11 = as.data.frame(test_data)
     test_data <- as.data.frame(apply(test_data_11,2,gyh))
     
-    train_data_01 = output_bi[[1]]  # 801 10  ?任?????? 823*197
-    test_data_01 = output_bi[[2]]   # 199 10             204*167
+    train_data_01 = output_bi[[1]]  # 801 10  
+    test_data_01 = output_bi[[2]]   # 199 10        
     train_data_w = train_data_01*train_data[,-c(1,2,3)]
     test_data_w = test_data_01*test_data[,-c(1,2,3)]
     
